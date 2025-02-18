@@ -19,3 +19,39 @@ paying users: token role auth + db search (as above + premium articles access)
 authors: token role auth (as above if paying + can publish)
 admin: token role auth (analytics dashboard: all users all articles, etc..)
 
+
+-----------------------------
+routes
+
+** = protected
+
+POST /api/auth/sign-up > new user
+POST /api/auth/log-in  > log in
+POST /api/auth/log-out  > log out
+** POST /api/auth/reset-password > password reset
+
+GET  /api/users > all userss
+
+GET  /api/users/:userId > fetch a profile page data for a user,
+**PUT  /api/users/:userId > change profile page data for a user,
+**DELETE  /api/users/:userId > delete a user,
+
+**POST  /api/users/:userId/favorites > adds an article to user favorites,
+**DELETE  /api/users/:userId/favorites > removes an article from user favorites,
+
+GET  /api/articles > all articles page
+**POST  /api/articles > adds a new article
+
+GET  /api/articles/:articleId > for an article
+**PUT  /api/articles/:articleId > changes the article 
+**DELETE  /api/articles/:articleId > deletes the article 
+
+GET  /api/articles/:articleId/comments > for all article comments
+**POST  /api/articles/:articleId/comments > adds a comment
+**PUT  /api/articles/:articleId/comments/:commentId > changes the comment 
+**DELETE  /api/articles/:articleId/comments/:commentId > deletes the comment 
+
+**GET /api/admin > loads the admin dashboard
+
+
+admin
