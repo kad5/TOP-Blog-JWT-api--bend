@@ -1,0 +1,21 @@
+dbs
+
+users (id, username, role, isPaying, comments, articles, favorites, createAt)
+  last_login (id, username, login time, ip)
+  all_logins (id, username, login time, ip)
+  favorites(id, userId, articleId )
+
+articles (id, author, isPremium, category, isPublished, createdAt, title, body, comments)
+
+comments (id, user, article, createdAt,)
+
+---------------------------
+roles: user, author, admin
+---------------------------
+auth:
+public: no auth (free articles, login and sign up)
+users: token role auth (as above + comments + dashboard with favorite articles and all comments)
+paying users: token role auth + db search (as above + premium articles access)
+authors: token role auth (as above if paying + can publish)
+admin: token role auth (analytics dashboard: all users all articles, etc..)
+

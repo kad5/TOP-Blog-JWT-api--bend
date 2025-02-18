@@ -1,0 +1,106 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// schema.prisma
+
+enum Role {
+  USER
+  AUTHOR
+  ADMIN
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  role      Role     @default(USER)
+  isPaying  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Relations
+  articles     Article[] // articles written by user (if author)
+  comments     Comment[]
+  favorites    Favorite[]
+  lastLogin    LastLogin?
+  loginHistory LoginHistory[]
+
+  @@map("users")
+}
+
+model LastLogin {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  loginTime DateTime @default(now())
+  ip        String?
+
+  // Relation
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("last_logins")
+}
+
+model LoginHistory {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  loginTime DateTime @default(now())
+  ip        String?
+
+  // Relation
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("login_history")
+}
+
+model Article {
+  id          Int      @id @default(autoincrement())
+  title       String
+  body        String
+  isPremium   Boolean  @default(true)
+  isPublished Boolean  @default(false)
+  category    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  authorId  Int
+  author    User       @relation(fields: [authorId], references: [id])
+  comments  Comment[]
+  favorites Favorite[]
+
+  @@map("articles")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id])
+  articleId Int
+  article   Article @relation(fields: [articleId], references: [id])
+
+  @@map("comments")
+}
+
+model Favorite {
+  // Relations
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id])
+  articleId Int
+  article   Article @relation(fields: [articleId], references: [id])
+
+  // both fields the primary key
+  @@id([userId, articleId])
+  @@map("favorites")
+}
