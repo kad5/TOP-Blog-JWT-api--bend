@@ -97,16 +97,8 @@ const get = {
 };
 
 const update = {
-  article: async (id, data, userId) => {
+  article: async (id, data) => {
     try {
-      const article = await prisma.article.findUnique({
-        where: { id },
-        select: { authorId: true, title: true },
-      });
-      if (!article) throw new Error("The article does not exist");
-      if (article.authorId !== userId)
-        throw new Error("you are not authorized to modify this article");
-
       return await prisma.article.update({ where: { id }, data });
     } catch (error) {
       throw new Error("Failed to update the acticle");
@@ -114,15 +106,6 @@ const update = {
   },
   comment: async (id, data) => {
     try {
-      const comment = await prisma.comment.findUnique({
-        where: { id },
-        select: { userId: true },
-      });
-
-      if (!comment) throw new Error("The comment does not exist");
-      if (comment.userId !== userId)
-        throw new Error("you are not authorized to delete this comment");
-
       return await prisma.comment.update({ where: { id }, data });
     } catch (error) {
       throw new Error("Failed to update the comment");
@@ -130,36 +113,16 @@ const update = {
   },
 };
 const dlt = {
-  article: async (id, userId) => {
+  article: async (id) => {
     try {
-      const article = await prisma.article.findUnique({
-        where: { id },
-        select: { authorId: true, title: true },
-      });
-
-      if (!article) throw new Error("The article does not exist");
-      if (article.authorId !== userId)
-        throw new Error("you are not authorized to delete this article");
-
-      await prisma.article.delete({ where: { id } });
-      return { message: `Article: ${article.title} deleted successfully` };
+      return await prisma.article.delete({ where: { id } });
     } catch (error) {
       throw new Error("Failed to delete the acticle");
     }
   },
   comment: async (id, userId) => {
     try {
-      const comment = await prisma.comment.findUnique({
-        where: { id },
-        select: { userId: true },
-      });
-
-      if (!comment) throw new Error("The comment does not exist");
-      if (comment.userId !== userId)
-        throw new Error("you are not authorized to delete this comment");
-
-      await prisma.comment.delete({ where: { id } });
-      return { message: "Comment deleted successfully" };
+      return await prisma.comment.delete({ where: { id } });
     } catch (error) {
       throw new Error("Failed to delete this comment");
     }

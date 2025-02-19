@@ -1,17 +1,27 @@
 const { Router } = require("express");
 const ctrl = require("../controllers/articles");
+const auth = require("../middleware/auth");
 const router = Router();
 
-router.get("/articles", ctrl.getAllArticles);
-router.post("/articles", ctrl.PostArticle);
+router
+  .route("/articles")
+  .get(ctrl.getAllArticles)
+  .post(auth.verifyToken, auth.isAuthor, ctrl.PostArticle);
 
-router.get("/articles/:articleId", ctrl.getArticle);
-router.put("/articles/:articleId", ctrl.updateArticle);
-router.delete("/articles/:articleId", ctrl.deleteArticle);
+router
+  .route("/articles/:articleId")
+  .get(ctrl.getArticle)
+  .put(auth.verifyToken, auth.ensureOwner("article"), ctrl.updateArticle)
+  .delete(auth.verifyToken, auth.ensureOwner("article"), ctrl.deleteArticle);
 
-router.get("/articles/:articleId/comments", ctrl.getAllcomments);
-router.post("/articles/:articleId/comments", ctrl.postComment);
-router.put("/articles/:articleId/comments/:commentId", ctrl.updateComment);
-router.delete("/articles/:articleId/comments/:commentId", ctrl.deleteComment);
+router
+  .route("/articles/:articleId/comments")
+  .get(ctrl.getAllcomments)
+  .post(auth.verifyToken, ctrl.postComment);
+
+router
+  .route("/articles/:articleId/comments/:commentId")
+  .put(auth.verifyToken, auth.ensureOwner("comment"), ctrl.updateComment)
+  .delete(auth.verifyToken, auth.ensureOwner("comment"), ctrl.deleteComment);
 
 module.exports = router;

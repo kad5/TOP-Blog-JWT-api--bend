@@ -71,4 +71,43 @@ const isPaying = (req, res, next) => {
   next();
 };
 
-module.exports = { issueToken, verifyToken, isAdmin, isAuthor, isPaying };
+const ensureOwner = (table) => {
+  return async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const id = req.params.commentId || req.params.articleId;
+      const entry =
+        table === "comment"
+          ? await prisma.comment.findUnique({
+              where: { id },
+              select: { authorId: true },
+            })
+          : await prisma.article.findUnique({
+              where: { id },
+              select: { authorId: true },
+            });
+      if (!entry) {
+        return res.status(404).json({ message: "Entry not found" });
+      }
+      if (entry.authorId !== userId) {
+        return res
+          .status(403)
+          .json({ message: "You are not authorized to access this entry" });
+      }
+      next();
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ message: "Server error", error: error.message });
+    }
+  };
+};
+
+module.exports = {
+  issueToken,
+  verifyToken,
+  isAdmin,
+  isAuthor,
+  isPaying,
+  ensureOwner,
+};

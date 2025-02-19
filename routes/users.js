@@ -3,13 +3,13 @@ const ctrl = require("../controllers/users");
 const auth = require("../middleware/auth");
 const router = Router();
 
-router.get("/", ctrl.getAllUsers);
+router.get("/", auth.verifyToken, ctrl.getAllUsers);
 
 router.get("/:userId", ctrl.getUserProfile);
-router.put("/:userId", ctrl.updateUserProfile);
+router.put("/:userId", auth.verifyToken, ctrl.updateUserProfile);
 router.delete("/:userId", auth.verifyToken, auth.isAdmin, ctrl.deleteUser);
 
-router.post("/:userId/favorites", ctrl.addFav);
-router.delete("/:userId/favorites", ctrl.deleteFav);
+router.post("/:userId/favorites", auth.verifyToken, ctrl.addFav);
+router.delete("/:userId/favorites", auth.verifyToken, ctrl.deleteFav);
 
 module.exports = router;

@@ -50,7 +50,7 @@ const logout = (req, res) => {
     path: "/",
     maxAge: 0,
   });
-  return res.status(204).json({ message: "Logged out successfully" });
+  return res.status(204).end();
 };
 
 const resetPassword = asyncHandler(async (req, res) => {});
