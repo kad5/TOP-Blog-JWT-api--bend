@@ -10,9 +10,10 @@ const getAllUsers = asyncHandler(async (req, res) => {
 
 const getUserProfile = asyncHandler(async (req, res) => {
   const { userId } = req.params;
+  console.log(typeof userId);
+  console.log(req.user);
   if (!userId) res.status(404).json({ message: "user not found" });
-
-  const user = await get.userProfile(userId);
+  const user = await get.userProfile(Number(userId));
   if (!user) res.status(404).json({ message: "user not found" });
 
   if (!req.user) {
@@ -20,7 +21,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
     const publicProfile = { id, username, motto };
     return res.status(200).json({ state: "public", profile: publicProfile });
   }
-  if (req.user && req.user !== userId) {
+  if (req.user && req.user.id !== Number(userId)) {
     const published = user.articles.filter((article) => article.isPublished);
     const favorited = user.favorites
       .filter((fav) => fav.article.isPublished)
@@ -32,7 +33,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
     };
     return res.status(200).json({ state: "shared", profile: sharedProfile });
   }
-  if (req?.user === userId) {
+  if (req?.user.id === Number(userId)) {
     const favorited = user.favorites
       .filter((fav) => fav.article.isPublished)
       .map((fav) => fav.article);
@@ -40,11 +41,11 @@ const getUserProfile = asyncHandler(async (req, res) => {
     return res.status(200).json({ state: "owner", profile: ownProfile });
   }
 });
+
 const updateUserProfile = asyncHandler(async (req, res) => {
   const { id } = req.user; // we use req.user and not req.params so that only the owner can update his profile
-  const data = req.body;
-
-  if (id !== req.params.userId)
+  const data = req.body.data;
+  if (id !== Number(req.params.userId))
     return res
       .status(403)
       .json({ message: "You are not authorized to update this profile" });

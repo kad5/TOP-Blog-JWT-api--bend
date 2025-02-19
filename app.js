@@ -19,6 +19,7 @@ const limiter = rateLimit({
 app.use(cookieParser()); //for the token being in an https cookie
 app.use(express.json());
 app.use(limiter);
+
 /*
 app.use(
   cors({

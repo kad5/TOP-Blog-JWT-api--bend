@@ -26,28 +26,34 @@ const issueToken = async (user, req) => {
   return { token, https };
 };
 
-const verifyToken = asyncHandler(async (req, res, next) => {
-  const header = req.headers["authorization"];
-  const token = header && header.split(" ")[1];
-  if (!token) return res.status(401).json({ message: "No token provided" });
+const verifyToken = (access) => {
+  return async (req, res, next) => {
+    const header = req.headers["authorization"];
+    const token = header && header.split(" ")[1];
+    if (!token && access === "private")
+      return res.status(401).json({ message: "No token provided" });
+    if (!token && access === "public") next();
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await get.userById(decoded.id);
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await get.userById(decoded.id);
+        // check if token was issued before last login
+        const lastLogin = new Date(user.lastLogin.loginTime).getTime();
+        if (decoded.iat < lastLogin)
+          return access === "private"
+            ? res.status(401).json({ message: "New login needed" })
+            : next();
 
-    // check if token was issued before last login
-    const lastLogin = new Date(user.lastLogin.loginTime).getTime();
-    if (decoded.iat < lastLogin)
-      return res.status(401).json({ message: "New login needed" });
-
-    const { password, ...data } = user;
-    req.user = data;
-    next();
-  } catch (error) {
-    return res.status(401).json({ message: "Invalid token" });
-  }
-});
-
+        const { password, ...data } = user;
+        req.user = data;
+        next();
+      } catch (error) {
+        return res.status(401).json({ message: "Invalid token" });
+      }
+    }
+  };
+};
 const isAdmin = (req, res, next) => {
   const user = req.user;
   if (user.role !== Role.ADMIN)

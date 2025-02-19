@@ -59,6 +59,20 @@ admin
 
 tests: 
 
--create account
--check jwt acess and invalidation
+Auth routes and functions:
+  -create account PASS
+  -login and issue jwt PASS
+  -logout and invalidate jwt PASS
+  -invalidate expired tokens by new login PASS
+  -login attempts registered PASS
+
+Users routes and functions:
+  -GET / (get all users) PASS
+  -GET /userId (get a user or 404) PASS
+  -PUT /userId :
+    -validation of req.body data PASS
+    -owner check and 403 PASS
+    
+
+
 -create post

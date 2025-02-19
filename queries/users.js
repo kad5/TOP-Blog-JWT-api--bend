@@ -94,8 +94,7 @@ const get = {
                   createdAt: true,
                   updatedAt: true,
                   author: {
-                    username: true,
-                    id: true,
+                    select: { username: true, id: true },
                   },
                   _count: {
                     select: { favorites: true, comments: true },
