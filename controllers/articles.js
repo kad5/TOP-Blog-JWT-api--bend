@@ -41,8 +41,6 @@ const PostArticle = asyncHandler(async (req, res) => {
   const isPremium = req.body.category || false;
   const isPublished = req.body.category || false;
   const category = req.body.category || null;
-  if (!title || !body)
-    return res.status(400).json({ message: "invalid request" });
   const article = await create.article(
     title,
     body,
@@ -57,11 +55,28 @@ const PostArticle = asyncHandler(async (req, res) => {
 
 const updateArticle = asyncHandler(async (req, res) => {
   const { articleId } = req.params;
-  const { data } = req.body;
-  if (!articleId || !data)
-    return res.status(400).json({ message: "invalid request" });
+  const { title, body, category, isPremium, isPublished } = req.body;
+  if (
+    !articleId ||
+    (!title &&
+      !body &&
+      !category &&
+      isPremium === undefined &&
+      isPublished === undefined)
+  ) {
+    return res
+      .status(400)
+      .json({ message: "Invalid request, no data to update" });
+  }
+  const data = {};
+  if (title) data.title = title;
+  if (body) data.body = body;
+  if (category) data.category = category;
+  if (isPremium !== undefined) data.isPremium = isPremium;
+  if (isPublished !== undefined) data.isPublished = isPublished;
+
   const article = await update.article(articleId, data);
-  if (!article) return res.status(404).json({ message: "article not found" });
+  if (!article) return res.status(404).json({ message: "Article not found" });
   return res.status(200).end();
 });
 
@@ -85,20 +100,21 @@ const getAllComments = asyncHandler(async (req, res) => {
 
 const postComment = asyncHandler(async (req, res) => {
   const { articleId } = req.params;
-  const { data } = req.body;
+  const { content } = req.body;
   const { userId } = req.user;
   if (!userId || !articleId)
     return res.status(400).json({ message: "invalid request" });
-  const comment = await create.comment(data, userId, articleId);
+  const comment = await create.comment(content, userId, articleId);
   if (!comment) return res.status(500).json({ message: "server error" });
   return res.status(200).end();
 });
+
 const updateComment = asyncHandler(async (req, res) => {
   const { commentId } = req.params;
-  const { data } = req.body;
-  if (!commentId || !data)
+  const { content } = req.body;
+  if (!commentId || !content)
     return res.status(400).json({ message: "invalid request" });
-  const comment = await update.comment(commentId, data);
+  const comment = await update.comment(commentId, content);
   if (!comment) return res.status(404).json({ message: "comment not found" });
   return res.status(200).end();
 });

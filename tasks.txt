@@ -55,3 +55,10 @@ GET  /api/articles/:articleId/comments > for all article comments
 
 
 admin
+
+
+tests: 
+
+-create account
+-check jwt acess and invalidation
+-create post

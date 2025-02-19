@@ -1,27 +1,39 @@
 const { Router } = require("express");
-const ctrl = require("../controllers/articles");
 const auth = require("../middleware/auth");
+const validate = require("../middleware/validation");
+const ctrl = require("../controllers/articles");
+
 const router = Router();
 
 router
   .route("/articles")
   .get(ctrl.getAllArticles)
-  .post(auth.verifyToken, auth.isAuthor, ctrl.PostArticle);
+  .post(auth.verifyToken, auth.isAuthor, validate.newArticle, ctrl.PostArticle);
 
 router
   .route("/articles/:articleId")
   .get(ctrl.getArticle)
-  .put(auth.verifyToken, auth.ensureOwner("article"), ctrl.updateArticle)
+  .put(
+    auth.verifyToken,
+    auth.ensureOwner("article"),
+    validate.modifyArticle,
+    ctrl.updateArticle
+  )
   .delete(auth.verifyToken, auth.ensureOwner("article"), ctrl.deleteArticle);
 
 router
   .route("/articles/:articleId/comments")
-  .get(ctrl.getAllcomments)
-  .post(auth.verifyToken, ctrl.postComment);
+  .get(ctrl.getAllComments)
+  .post(auth.verifyToken, validate.comment, ctrl.postComment);
 
 router
   .route("/articles/:articleId/comments/:commentId")
-  .put(auth.verifyToken, auth.ensureOwner("comment"), ctrl.updateComment)
+  .put(
+    auth.verifyToken,
+    auth.ensureOwner("comment"),
+    validate.comment,
+    ctrl.updateComment
+  )
   .delete(auth.verifyToken, auth.ensureOwner("comment"), ctrl.deleteComment);
 
 module.exports = router;
