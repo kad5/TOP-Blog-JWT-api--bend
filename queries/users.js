@@ -12,7 +12,7 @@ const create = {
   },
   loginAttempt: async (userId, ip) => {
     try {
-      await prisma.$transaction([
+      return await prisma.$transaction([
         // Update last login
         prisma.lastLogin.upsert({
           where: { userId },

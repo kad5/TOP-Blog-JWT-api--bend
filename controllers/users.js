@@ -2,7 +2,9 @@ const getAllUsers = () => {};
 
 const getUserProfile = () => {};
 const updateUserProfile = () => {};
-const deleteUser = () => {};
+const deleteUser = (req, res) => {
+  res.json({ message: "user deleted" });
+};
 
 const addFav = () => {};
 const deleteFav = () => {};
