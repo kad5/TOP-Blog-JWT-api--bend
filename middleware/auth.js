@@ -12,7 +12,7 @@ const issueToken = async (user, req) => {
   const token = jwt.sign(
     { id: user.id, iat: Date.now() },
     process.env.JWT_SECRET,
-    { expiresIn: "5m" }
+    { expiresIn: "1hr" }
   );
 
   const https = {

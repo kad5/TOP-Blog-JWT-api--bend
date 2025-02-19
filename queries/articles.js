@@ -31,13 +31,16 @@ const create = {
 };
 
 const get = {
-  articleById: async (id) => {
+  articleById: async (id, userId) => {
     try {
       return await prisma.article.findUnique({
         where: { id },
         include: {
           author: { select: { id: true, username: true, createdAt: true } },
           _count: { select: { favorites: true } },
+          favorites: userId
+            ? { where: { userId }, select: { id: true } }
+            : false,
         },
       });
     } catch (error) {
@@ -59,12 +62,7 @@ const get = {
       throw new Error("failed to fetch the comments for this article");
     }
   },
-  allArticlesList: async (
-    page = 1,
-    pageSize = 10,
-    sortDirection = "desc",
-    freeOnly = false
-  ) => {
+  allArticlesList: async (page, pageSize, sortDirection, freeOnly, userId) => {
     page = Math.max(1, page); // to make sure page is at least 1
     pageSize = Math.max(1, pageSize); // to make sure pageSize is at least 1 article
     const skip = (page - 1) * pageSize;
@@ -87,6 +85,9 @@ const get = {
           updatedAt: true,
           author: { select: { id: true, username: true, createdAt: true } },
           _count: { select: { favorites: true, comments: true } },
+          favorites: userId
+            ? { where: { userId }, select: { id: true } } // to check if the user likes it
+            : false, //return false meaning it is a public viewer
         },
       });
       return articles;
