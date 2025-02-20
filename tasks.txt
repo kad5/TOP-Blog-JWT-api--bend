@@ -54,25 +54,73 @@ GET  /api/articles/:articleId/comments > for all article comments
 **GET /api/admin > loads the admin dashboard
 
 
-admin
+-----------------------------------------
 
 
-tests: 
+tests: (/api)
 
-Auth routes and functions:
-  -create account PASS
-  -login and issue jwt PASS
-  -logout and invalidate jwt PASS
-  -invalidate expired tokens by new login PASS
-  -login attempts registered PASS
+Auth routes and functions: (/auth)
+  POST sign up, log in, log out
+  -create account - PASS
+  -Sign user in with account creation - PASS
+  -login and issue jwt - PASS
+  -login attempts registered - PASS
+  -Check token and token access at each route - PASS
+  -invalidate expired tokens by new login - PASS
+  -logout and invalidate jwt - PASS
 
-Users routes and functions:
-  -GET / (get all users) PASS
-  -GET /userId (get a user or 404) PASS
+Users routes and functions: (/users)
+  -GET / (get all users) - PASS
+  -GET /userId:
+    -renders public view if no valid token - PASS
+    -renders shared view if not the owner - PASS
+    -renders private view if it is the owner of the profile - PASS 
+    -gives 404 on non existent - PASS
   -PUT /userId :
-    -validation of req.body data PASS
-    -owner check and 403 PASS
-    
+    -validation of req.body data update - PASS
+    -only owner can update and 403 of others - PASS
+  -DELETE  /userId :
+    -only admins can delete - PASS
+    -successful account deletion with cascade - PASS
+
+Articles, comments and favorites (/articles)
+    -GET / (get all articles) - PASS
+      - users can view articles -PASS
+      - public can view articles - PASS
+      - Public and other users cant view summary of unpublished
+      - owner can view their own unpublished
+    - GET /aritcle id:
+      - fetches the article data - PASS
+      - doesnt view it if unpublished & gives 403 (unless its the owner) -PASS
+      -non payers cant access premium articles unless it is the owner - PASS
+      - 404 on non existent article - PASS
+    -POST / 
+      - only authors can post articles - PASS
+      - article req.body validation - PASS
+      - falsy values for isPremium, isPublished and category are handeled correctly - PASS
+    -PUT /articleId
+      - Only author can update - PASS
+      - valdation checks - PASS
+      - changes made - PASS with a bug (can't clear)
+    -DELETE /articleId
+      - Only author can delete - PASS
+      - delete with cascade - PASS
+    - GET //:articleId/comments
+        - gets the comments of the article - PASS
+    - POST  //:articleId/comments
+        - only users can post - PASS
+        - comment validated before hitting db - PASS
+    - PUT //:articleId/comments/comment id
+        - only owner can modify - PASS
+        - comment validated before hitting db - PASS
+    - DELETE
+        - only owner can delete - PASS
+
+    favorites
+        -add to favs - PASS
+        - remove from favs - PASS
 
 
--create post
+all routes tested
+
+------------------------------------------

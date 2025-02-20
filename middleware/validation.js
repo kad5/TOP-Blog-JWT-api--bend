@@ -1,4 +1,3 @@
-const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
 
 const roleEnum = ["ADMIN", "AUTHOR", "USER"];
@@ -28,10 +27,6 @@ const checks = {
       .customSanitizer((value) => value.toUpperCase())
       .isIn(roleEnum)
       .withMessage("Invalid role specified"),
-    body("adminPassword")
-      .if((value, { req }) => req.body.role === "ADMIN")
-      .custom((value) => value === process.env.ADMIN_ACESS_PASS)
-      .withMessage("Wrong admin password"),
   ],
   motto: [body("motto").optional().trim()],
   article: [
@@ -55,7 +50,7 @@ const checks = {
     body("content")
       .trim()
       .notEmpty()
-      .withMessage("a comment cannot be empty if provided"),
+      .withMessage(" you cannot post empty comments"),
   ],
 };
 
@@ -73,35 +68,37 @@ const signup = [
 
 const updateProfile = [
   (req, res, next) => {
-    const { motto, role, password } = req.body;
-    if (!motto && !role && !password) {
-      return res
-        .status(400)
-        .json({ message: "Invalid request, at least one field is required" });
-    }
-    next();
-  },
-  (req, res, next) => {
     const activeChecks = [];
+    // loops over the body to get whatever need to be validated
     Object.keys(req.body).forEach((field) => {
       if (checks[field]) {
         activeChecks.push(...checks[field]);
       }
     });
+    // checks it
     Promise.all(activeChecks.map((check) => check.run(req))).then(() => {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
       }
-
+      // if passed, then adds it to the body.data for prisma
       req.body.data = Object.keys(req.body)
         .filter((key) => checks[key])
         .reduce((accumulator, key) => {
           accumulator[key] = req.body[key];
           return accumulator;
         }, {});
-
-      next(); // must be called insdie the .then since its async
+      // not clean by needed for the boolean isPaying
+      if (req.body.isPaying !== undefined)
+        req.body.data.isPaying = req.body.isPaying;
+      // not clean by needed for since express validator couldnt check
+      if (
+        req.body.data.role === "ADMIN" &&
+        req.body.adminPassword !== process.env.ADMIN_ACESS_PASS
+      )
+        return res.status(403).json({ message: "Wrong admin password" });
+      // all good. next must be called insdie the .then since its async and if called outside it will excute before promise returns
+      next();
     });
   },
 ];

@@ -1,4 +1,5 @@
-const asyncHandler = require("express-async-handler");
+const prisma = require("../config/prisma");
+
 const jwt = require("jsonwebtoken");
 const { Role } = require("@prisma/client");
 const { create, get } = require("../queries/users");
@@ -64,7 +65,7 @@ const isAdmin = (req, res, next) => {
 const isAuthor = (req, res, next) => {
   const user = req.user;
   if (user.role !== Role.ADMIN && user.role !== Role.AUTHOR)
-    return res.status(403).json({ message: "you are not an admin" });
+    return res.status(403).json({ message: "you are not an author" });
   next();
 };
 
@@ -82,14 +83,15 @@ const ensureOwner = (table) => {
     try {
       const userId = req.user.id;
       const id = req.params.commentId || req.params.articleId;
+      console.log(userId);
       const entry =
         table === "comment"
           ? await prisma.comment.findUnique({
-              where: { id },
+              where: { id: Number(id) },
               select: { authorId: true },
             })
           : await prisma.article.findUnique({
-              where: { id },
+              where: { id: Number(id) },
               select: { authorId: true },
             });
       if (!entry) {
@@ -98,7 +100,7 @@ const ensureOwner = (table) => {
       if (entry.authorId !== userId) {
         return res
           .status(403)
-          .json({ message: "You are not authorized to access this entry" });
+          .json({ message: "You are not authorized to modify this entry" });
       }
       next();
     } catch (error) {

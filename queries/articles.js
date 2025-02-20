@@ -3,19 +3,22 @@ const prisma = require("../config/prisma");
 const create = {
   article: async (title, body, authorId, isPremium, isPublished, category) => {
     try {
+      console.log(title, body, authorId, isPremium, isPublished, category);
       return await prisma.article.create({
         data: { title, body, authorId, isPremium, isPublished, category },
       });
     } catch (error) {
+      console.log(error);
       throw new Error("failed to create article");
     }
   },
-  comment: async (content, userId, articleId) => {
+  comment: async (content, authorId, articleId) => {
     try {
       return await prisma.comment.create({
-        data: { content, userId, articleId },
+        data: { content, authorId, articleId },
       });
     } catch (error) {
+      console.log(error);
       throw new Error("failed to create comment");
     }
   },
@@ -39,11 +42,12 @@ const get = {
           author: { select: { id: true, username: true, createdAt: true } },
           _count: { select: { favorites: true } },
           favorites: userId
-            ? { where: { userId }, select: { id: true } }
+            ? { where: { userId }, select: { userId: true } }
             : false,
         },
       });
     } catch (error) {
+      console.log(error);
       throw new Error("failed to find the requested article");
     }
   },
@@ -52,13 +56,14 @@ const get = {
       return await prisma.comment.findMany({
         where: { articleId },
         include: {
-          user: { select: { id: true, username: true, createdAt: true } },
+          author: { select: { id: true, username: true, createdAt: true } },
         },
         orderBy: {
           createdAt: "desc",
         },
       });
     } catch (error) {
+      console.log(error);
       throw new Error("failed to fetch the comments for this article");
     }
   },
@@ -86,12 +91,13 @@ const get = {
           author: { select: { id: true, username: true, createdAt: true } },
           _count: { select: { favorites: true, comments: true } },
           favorites: userId
-            ? { where: { userId }, select: { id: true } } // to check if the user likes it
+            ? { where: { userId }, select: { userId: true } } // to check if the user likes it
             : false, //return false meaning it is a public viewer
         },
       });
       return articles;
     } catch (error) {
+      console.log(error);
       throw new Error("Failed to fetch the articles list.");
     }
   },
@@ -102,6 +108,7 @@ const update = {
     try {
       return await prisma.article.update({ where: { id }, data });
     } catch (error) {
+      console.log(error);
       throw new Error("Failed to update the acticle");
     }
   },
@@ -109,6 +116,7 @@ const update = {
     try {
       return await prisma.comment.update({ where: { id }, data });
     } catch (error) {
+      console.log(error);
       throw new Error("Failed to update the comment");
     }
   },
@@ -121,17 +129,25 @@ const dlt = {
       throw new Error("Failed to delete the acticle");
     }
   },
-  comment: async (id, userId) => {
+  comment: async (id) => {
     try {
       return await prisma.comment.delete({ where: { id } });
     } catch (error) {
       throw new Error("Failed to delete this comment");
     }
   },
-  favorite: async (id) => {
+  favorite: async (userId, articleId) => {
     try {
-      return await prisma.favorite.delete({ where: { id } });
+      return await prisma.favorite.delete({
+        where: {
+          userId_articleId: {
+            userId: userId,
+            articleId: articleId,
+          },
+        },
+      });
     } catch (error) {
+      console.log(error);
       throw new Error("Failed to unlike the article");
     }
   },

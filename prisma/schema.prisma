@@ -44,7 +44,7 @@ model LastLogin {
   ip        String?
 
   // Relation
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("last_logins")
 }
@@ -56,7 +56,7 @@ model LoginHistory {
   ip        String?
 
   // Relation
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("login_history")
 }
@@ -73,7 +73,7 @@ model Article {
 
   // Relations
   authorId  Int
-  author    User       @relation(fields: [authorId], references: [id])
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
   comments  Comment[]
   favorites Favorite[]
 
@@ -87,9 +87,9 @@ model Comment {
 
   // Relations
   authorId  Int
-  author    User    @relation(fields: [authorId], references: [id])
+  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
   articleId Int
-  article   Article @relation(fields: [articleId], references: [id])
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
   @@map("comments")
 }
@@ -97,9 +97,9 @@ model Comment {
 model Favorite {
   // Relations
   userId    Int
-  user      User    @relation(fields: [userId], references: [id])
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   articleId Int
-  article   Article @relation(fields: [articleId], references: [id])
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
   // both fields the primary key
   @@id([userId, articleId])

@@ -7,33 +7,46 @@ const router = Router();
 
 router
   .route("/")
-  .get(ctrl.getAllArticles)
-  .post(auth.verifyToken, auth.isAuthor, validate.newArticle, ctrl.PostArticle);
+  .get(auth.verifyToken("public"), ctrl.getAllArticles)
+  .post(
+    auth.verifyToken("private"),
+    auth.isAuthor,
+    validate.newArticle,
+    ctrl.PostArticle
+  );
 
 router
   .route("/:articleId")
-  .get(ctrl.getArticle)
+  .get(auth.verifyToken("public"), ctrl.getArticle)
   .put(
-    auth.verifyToken,
+    auth.verifyToken("private"),
     auth.ensureOwner("article"),
     validate.modifyArticle,
     ctrl.updateArticle
   )
-  .delete(auth.verifyToken, auth.ensureOwner("article"), ctrl.deleteArticle);
+  .delete(
+    auth.verifyToken("private"),
+    auth.ensureOwner("article"),
+    ctrl.deleteArticle
+  );
 
 router
   .route("/:articleId/comments")
-  .get(ctrl.getAllComments)
-  .post(auth.verifyToken, validate.comment, ctrl.postComment);
+  .get(auth.verifyToken("public"), ctrl.getAllComments)
+  .post(auth.verifyToken("private"), validate.comment, ctrl.postComment);
 
 router
   .route("/:articleId/comments/:commentId")
   .put(
-    auth.verifyToken,
+    auth.verifyToken("private"),
     auth.ensureOwner("comment"),
     validate.comment,
     ctrl.updateComment
   )
-  .delete(auth.verifyToken, auth.ensureOwner("comment"), ctrl.deleteComment);
+  .delete(
+    auth.verifyToken("private"),
+    auth.ensureOwner("comment"),
+    ctrl.deleteComment
+  );
 
 module.exports = router;

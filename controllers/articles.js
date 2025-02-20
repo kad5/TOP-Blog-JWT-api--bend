@@ -6,7 +6,7 @@ const getAllArticles = asyncHandler(async (req, res) => {
   const pageSize = req.body.pageSize || 10;
   const sortDirection = req.body.sortDirection || "desc";
   const freeOnly = req.body.freeOnly || false;
-  const userId = req.user.id || null;
+  const userId = req.user?.id || null;
   const articles = await get.allArticlesList(
     page,
     pageSize,
@@ -24,10 +24,18 @@ const getAllArticles = asyncHandler(async (req, res) => {
 
 const getArticle = asyncHandler(async (req, res) => {
   const { articleId } = req.params;
-  const userId = req.user.id || null;
-  const article = await get.articleById(articleId, userId);
+  const userId = req.user?.id || null;
+  const article = await get.articleById(Number(articleId), userId);
   if (!article) return res.status(404).json({ message: "article not found" });
-  if (article.isPublished || article.userId === userId) {
+  if (
+    article.isPremium &&
+    (!userId || !req.user.isPaying) &&
+    userId !== article.authorId
+  )
+    return res
+      .status(403)
+      .json({ message: "this article is for paid users only" });
+  if (article.isPublished || article.authorId === userId) {
     return res.status(200).json({ article });
   } else
     return res.status(403).json({
@@ -38,8 +46,8 @@ const getArticle = asyncHandler(async (req, res) => {
 const PostArticle = asyncHandler(async (req, res) => {
   const authorId = req.user.id;
   const { title, body } = req.body;
-  const isPremium = req.body.category || false;
-  const isPublished = req.body.category || false;
+  const isPremium = req.body.isPremium || false;
+  const isPublished = req.body.isPublished || false;
   const category = req.body.category || null;
   const article = await create.article(
     title,
@@ -75,7 +83,7 @@ const updateArticle = asyncHandler(async (req, res) => {
   if (isPremium !== undefined) data.isPremium = isPremium;
   if (isPublished !== undefined) data.isPublished = isPublished;
 
-  const article = await update.article(articleId, data);
+  const article = await update.article(Number(articleId), data);
   if (!article) return res.status(404).json({ message: "Article not found" });
   return res.status(200).end();
 });
@@ -86,14 +94,15 @@ const deleteArticle = asyncHandler(async (req, res) => {
     return res
       .status(400)
       .json({ message: "incorrect article id, please try again" });
-  const article = await dlt.article(articleId);
+  console.log("here");
+  const article = await dlt.article(Number(articleId));
   if (!article) return res.status(404).json({ message: "article not found" });
   return res.status(200).end();
 });
 
 const getAllComments = asyncHandler(async (req, res) => {
   const { articleId } = req.params;
-  const comments = await commentsByArticleId(articleId);
+  const comments = await get.commentsByArticleId(Number(articleId));
   if (!comments) return res.status(500).json({ message: "server error" });
   return res.status(200).json({ comments });
 });
@@ -101,10 +110,11 @@ const getAllComments = asyncHandler(async (req, res) => {
 const postComment = asyncHandler(async (req, res) => {
   const { articleId } = req.params;
   const { content } = req.body;
-  const { userId } = req.user;
+  const userId = req.user.id;
+  console.log(articleId, content, userId);
   if (!userId || !articleId)
     return res.status(400).json({ message: "invalid request" });
-  const comment = await create.comment(content, userId, articleId);
+  const comment = await create.comment(content, userId, Number(articleId));
   if (!comment) return res.status(500).json({ message: "server error" });
   return res.status(200).end();
 });
@@ -114,7 +124,8 @@ const updateComment = asyncHandler(async (req, res) => {
   const { content } = req.body;
   if (!commentId || !content)
     return res.status(400).json({ message: "invalid request" });
-  const comment = await update.comment(commentId, content);
+  const data = { content };
+  const comment = await update.comment(Number(commentId), data);
   if (!comment) return res.status(404).json({ message: "comment not found" });
   return res.status(200).end();
 });
@@ -122,7 +133,7 @@ const updateComment = asyncHandler(async (req, res) => {
 const deleteComment = asyncHandler(async (req, res) => {
   const { commentId } = req.params;
   if (!commentId) return res.status(400).json({ message: "invalid request" });
-  const comment = await dlt.comment(commentId);
+  const comment = await dlt.comment(Number(commentId));
   if (!comment) return res.status(404).json({ message: "comment not found" });
   return res.status(200).end();
 });

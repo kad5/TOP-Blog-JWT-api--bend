@@ -172,6 +172,7 @@ const dlt = {
     try {
       return await prisma.user.delete({ where: { id } });
     } catch (error) {
+      console.log(error);
       throw new Error("Failed to delete the user");
     }
   },
