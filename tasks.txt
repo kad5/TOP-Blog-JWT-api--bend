@@ -124,3 +124,31 @@ Articles, comments and favorites (/articles)
 all routes tested
 
 ------------------------------------------
+
+front end
+
+images, icons 10 dev by 10
+
+components: 
+  -post card: unpublished, premium, free
+  -comment card
+  -article form
+  -comment form
+  -login
+  -signup
+  -header
+
+
+cors and http
+
+
+
+
+token handling
+1. No token + public route: Continue with next()
+2. No token + private route: Return 401
+3. Valid token + valid time: Process request normally
+4. Valid token + issued before last login + private route: Clear cookie and return 401
+5. Valid token + issued before last login + public route: Clear cookie, set header, continue
+6. Expired token + private route: Clear cookie and return 401
+7. Expired token + public route: Clear cookie, set header, continue

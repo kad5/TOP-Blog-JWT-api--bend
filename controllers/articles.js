@@ -7,6 +7,7 @@ const getAllArticles = asyncHandler(async (req, res) => {
   const sortDirection = req.body.sortDirection || "desc";
   const freeOnly = req.body.freeOnly || false;
   const userId = req.user?.id || null;
+  console.log(userId);
   const articles = await get.allArticlesList(
     page,
     pageSize,

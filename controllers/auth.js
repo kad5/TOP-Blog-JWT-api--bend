@@ -36,14 +36,15 @@ const login = asyncHandler(async (req, res) => {
   try {
     const { token, https } = await issueToken(user, req);
     res.cookie("token", token, https);
-    return res.status(200).json({ message: `success` });
+    return res.status(200).json({ id: user.id, username });
   } catch {
-    return res.status(500).json({ message: "server error" });
+    return res.status(500).json({ message: "server error sending token" });
   }
 });
 
 const logout = (req, res) => {
-  res.clearCookie("accessToken", {
+  console.log("a user logged out");
+  res.clearCookie("token", {
     httpOnly: true,
     sameSite: "none",
     secure: process.env.NODE_ENV === "production",
