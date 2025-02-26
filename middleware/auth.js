@@ -30,38 +30,42 @@ const verifyToken = (access) => {
     const token = req.cookies.token;
     if (!token) {
       console.log("no token recieved");
-      res.setHeader("X-auth-custom", "not-verified"); // make sure to reset the frontend state
-      return accessCheck(req, res, next, access);
+      return accessCheck(req, res, next, access); // make sure to reset the frontend state
     }
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await get.userById(decoded.id);
-        // check if token was issued before last login (ie a new login attempt invalidates it)
-        const lastLogin = Math.floor(
-          new Date(user.lastLogin.loginTime).getTime() / 1000
-        );
-        if (decoded.iat < lastLogin) {
-          console.log("invalidated token by new login");
-          res.setHeader("X-auth-custom", "not-verified");
-          clearInvalidToken(req, res);
-          return accessCheck(req, res, next, access);
-        }
-        console.log("valid token");
-        const { password, ...data } = user;
-        req.user = data;
-        return next();
-      } catch (error) {
-        console.log("expired token");
-        res.setHeader("X-auth-custom", "not-verified");
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await get.userById(decoded.id);
+      // check if token was issued before last login (ie: a new login attempt invalidates it)
+      const lastLogin = Math.floor(
+        new Date(user.lastLogin.loginTime).getTime() / 1000
+      );
+      if (decoded.iat < lastLogin) {
+        console.log("invalidated token by a new login");
         clearInvalidToken(req, res);
         return accessCheck(req, res, next, access);
       }
+      console.log("valid token");
+      const { password, ...data } = user;
+      req.user = data;
+      return next();
+    } catch (error) {
+      console.log("expired token");
+      clearInvalidToken(req, res);
+      return accessCheck(req, res, next, access);
     }
   };
 };
 
 const accessCheck = (req, res, next, access) => {
+  // a header to notify the frontend of non verified status to update the ui, the cache contorl
+  // is to fix a bug where the browser cached a non verified header and served it even after log in
+  res.setHeader("X-auth-custom", "not-verified");
+  res.set({
+    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+    Pragma: "no-cache",
+    Expires: "0",
+    "Surrogate-Control": "no-store",
+  });
   if (access === "private") {
     console.log("- private route");
     return res.status(401).json({ message: "New login needed" });
@@ -72,6 +76,7 @@ const accessCheck = (req, res, next, access) => {
 };
 
 const clearInvalidToken = (req, res) => {
+  console.log("cookie cleared");
   res.clearCookie("token", {
     httpOnly: true,
     sameSite: "none",
