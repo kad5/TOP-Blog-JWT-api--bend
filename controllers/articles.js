@@ -65,6 +65,7 @@ const PostArticle = asyncHandler(async (req, res) => {
 const updateArticle = asyncHandler(async (req, res) => {
   const { articleId } = req.params;
   const { title, body, category, isPremium, isPublished } = req.body;
+  console.log(title, body, category, isPremium, isPublished);
   if (
     !articleId ||
     (!title &&
@@ -112,7 +113,6 @@ const postComment = asyncHandler(async (req, res) => {
   const { articleId } = req.params;
   const { content } = req.body;
   const userId = req.user.id;
-  console.log(articleId, content, userId);
   if (!userId || !articleId)
     return res.status(400).json({ message: "invalid request" });
   const comment = await create.comment(content, userId, Number(articleId));

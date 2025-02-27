@@ -1,11 +1,10 @@
 const asyncHandler = require("express-async-handler");
 const { create, get } = require("../queries/users");
 const bcrypt = require("bcryptjs");
-const { issueToken } = require("../middleware/auth");
+const { issueToken, isPaying } = require("../middleware/auth");
 
 const signup = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
-
   const isTaken = await get.userByUsername(username);
   if (isTaken)
     return res.status(409).json({ message: "This username is already taken" });
@@ -16,7 +15,7 @@ const signup = asyncHandler(async (req, res) => {
   try {
     const { token, https } = await issueToken(user, req);
     res.cookie("token", token, https);
-    return res.status(201).json({ message: `success` });
+    return res.status(201).json({ messagge: `success` });
   } catch {
     return res.status(500).json({ message: "server error" });
   }
@@ -36,7 +35,12 @@ const login = asyncHandler(async (req, res) => {
   try {
     const { token, https } = await issueToken(user, req);
     res.cookie("token", token, https);
-    return res.status(200).json({ id: user.id, username });
+    return res.status(200).json({
+      id: user.id,
+      username,
+      role: user.role,
+      isPaying: user.isPaying,
+    });
   } catch {
     return res.status(500).json({ message: "server error sending token" });
   }
@@ -49,7 +53,6 @@ const logout = (req, res) => {
     sameSite: "none",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 0,
   });
   return res.status(204).end();
 };

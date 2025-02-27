@@ -33,7 +33,11 @@ router
 router
   .route("/:articleId/comments")
   .get(auth.verifyToken("public"), ctrl.getAllComments)
-  .post(auth.verifyToken("private"), validate.comment, ctrl.postComment);
+  .post(
+    auth.verifyToken("private"),
+    validate.comment,
+    ctrl.postComment
+  );
 
 router
   .route("/:articleId/comments/:commentId")

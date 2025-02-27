@@ -82,7 +82,6 @@ const clearInvalidToken = (req, res) => {
     sameSite: "none",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 0,
   });
 };
 

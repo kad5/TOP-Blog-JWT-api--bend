@@ -53,7 +53,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   if (data.password) data.password = await bcrypt.hash(data.password, 10);
   const updatedUser = await update.user(id, data);
   if (!updatedUser) return res.status(500).json({ message: "server error" });
-  return res.status(200).end();
+  return res.status(200).json({ message: "sucess" });
 });
 
 const deleteUser = asyncHandler(async (req, res) => {
