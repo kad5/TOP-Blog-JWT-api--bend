@@ -16,8 +16,9 @@ const signup = asyncHandler(async (req, res) => {
   if (typeof password !== "string") {
     return res.status(400).json({ message: "Password must be a string" });
   }
-
-  const hashedPassword = bcryptjs.hashSync(String(password), 4);
+  const salt = await bcryptjs.genSalt(10);
+  console.log(salt);
+  const hashedPassword = bcryptjs.hashSync(String(password), salt);
   console.log("hashed", hashedPassword);
   const user = await create.user(username, hashedPassword);
   console.log("created");
