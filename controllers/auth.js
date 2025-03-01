@@ -18,7 +18,7 @@ const signup = asyncHandler(async (req, res) => {
   }
   const salt = await bcryptjs.genSalt(10);
   console.log(salt);
-  const hashedPassword = bcryptjs.hashSync(String(password), salt);
+  const hashedPassword = await bcryptjs.hash(String(password), salt);
   console.log("hashed", hashedPassword);
   const user = await create.user(username, hashedPassword);
   console.log("created");
