@@ -1,6 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const { create, get } = require("../queries/users");
-const bcryptjs = require("bcryptjs");
+const argon2 = require("argon2");
 const { issueToken, isPaying } = require("../middleware/auth");
 
 const signup = asyncHandler(async (req, res) => {
@@ -16,9 +16,8 @@ const signup = asyncHandler(async (req, res) => {
   if (typeof password !== "string") {
     return res.status(400).json({ message: "Password must be a string" });
   }
-  const salt = await bcryptjs.genSalt(10);
-  console.log(salt);
-  const hashedPassword = await bcryptjs.hash(String(password), salt);
+
+  const hashedPassword = await argon2.hash(password);
   console.log("hashed", hashedPassword);
   const user = await create.user(username, hashedPassword);
   console.log("created");
@@ -40,7 +39,7 @@ const login = asyncHandler(async (req, res) => {
     return res.status(401).json({ message: "invalid username or password" });
   console.log(typeof password);
   console.log(password);
-  const match = await bcryptjs.compare(password, user.password);
+  const match = await argon2.verify(user.password, password);
   if (!match)
     return res.status(401).json({ message: "invalid username or password" });
 
