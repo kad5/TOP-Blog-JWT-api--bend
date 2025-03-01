@@ -19,6 +19,7 @@ const app = express();
 
 app.use(cookieParser()); //for the token being in an https cookie
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 //app.use(limiter);
 
 app.use(

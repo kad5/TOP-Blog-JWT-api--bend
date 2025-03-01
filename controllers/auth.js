@@ -27,7 +27,8 @@ const login = asyncHandler(async (req, res) => {
   const user = await get.userByUsername(username);
   if (!user)
     return res.status(401).json({ message: "invalid username or password" });
-
+  console.log(typeof password);
+  console.log(password);
   const match = await bcrypt.compare(password, user.password);
   if (!match)
     return res.status(401).json({ message: "invalid username or password" });
