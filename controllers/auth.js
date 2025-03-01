@@ -17,7 +17,7 @@ const signup = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Password must be a string" });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(String(password), Number(4));
   const user = await create.user(username, hashedPassword);
 
   try {
