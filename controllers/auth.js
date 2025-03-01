@@ -24,7 +24,12 @@ const signup = asyncHandler(async (req, res) => {
   try {
     const { token, https } = await issueToken(user, req);
     res.cookie("token", token, https);
-    return res.status(201).json({ messagge: `success` });
+    return res.status(201).json({
+      id: user.id,
+      username,
+      role: user.role,
+      isPaying: user.isPaying,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "server error", error });
