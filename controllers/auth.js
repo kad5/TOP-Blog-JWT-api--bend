@@ -1,6 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const { create, get } = require("../queries/users");
-const bcrypt = require("bcryptjs");
+const bcryptjs = require("bcryptjs");
 const { issueToken, isPaying } = require("../middleware/auth");
 
 const signup = asyncHandler(async (req, res) => {
@@ -17,7 +17,7 @@ const signup = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Password must be a string" });
   }
 
-  const hashedPassword = await bcrypt.hash(String(password), Number(4));
+  const hashedPassword = await bcryptjs.hash(password, 10);
   const user = await create.user(username, hashedPassword);
 
   try {
@@ -37,7 +37,7 @@ const login = asyncHandler(async (req, res) => {
     return res.status(401).json({ message: "invalid username or password" });
   console.log(typeof password);
   console.log(password);
-  const match = await bcrypt.compare(password, user.password);
+  const match = await bcryptjs.compare(password, user.password);
   if (!match)
     return res.status(401).json({ message: "invalid username or password" });
 
