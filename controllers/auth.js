@@ -18,8 +18,9 @@ const signup = asyncHandler(async (req, res) => {
   }
 
   const hashedPassword = await bcryptjs.hash(password, 10);
+  console.log("hashed", hashedPassword);
   const user = await create.user(username, hashedPassword);
-
+  console.log("created");
   try {
     const { token, https } = await issueToken(user, req);
     res.cookie("token", token, https);
