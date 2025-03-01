@@ -9,6 +9,10 @@ const signup = asyncHandler(async (req, res) => {
   if (isTaken)
     return res.status(409).json({ message: "This username is already taken" });
 
+  console.log("Request body:", req.body);
+  console.log("Password type:", typeof password);
+  console.log("Password:", password);
+
   const hashedPassword = await bcrypt.hash(password, 10);
   const user = await create.user(username, hashedPassword);
 
